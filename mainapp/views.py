@@ -1,3 +1,8 @@
+from django.shortcuts import render, HttpResponse
+import PIL.Image
+from io import BytesIO
+import os
+import json
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
@@ -24,3 +29,26 @@ def login(request):
         return index(request)
     else:
         return render(request, 'registration/fail.html')
+
+
+def get_img(request):
+    if request.method == "POST":
+        img = request.body
+        if img:
+            mg = PIL.Image.open(BytesIO(img))
+            i = (len(os.listdir('mainapp/static')))
+            if i > 100:
+                for j in os.listdir('mainapp/static'):
+                    os.remove('mainapp/static/'+j)
+            k = len(os.listdir('mainapp/static'))
+            if k < 10:
+                mg.save(f'mainapp/static/canvas0{k}.png', 'PNG')
+            else:
+                mg.save(f'mainapp/static/canvas{k}.png', 'PNG')
+            return HttpResponse(status=200)
+    return HttpResponse(status=400)
+
+
+def get_updates(request):
+    file = os.listdir('mainapp/static')[-1]
+    return HttpResponse(content=json.dumps({'i': 'static/'+file}))
