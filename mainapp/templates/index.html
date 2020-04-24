@@ -3,54 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 </head>
 <body>
-<canvas id="Canvas" width="500" height="500"
-        style="background-color:#eee; border: 1px solid #ccc; margin:10px;">
-    Ваш браузер не поддерживает Canvas
-</canvas>
-<button onclick="saveCanvasAsImageFile()">
-    Сохранить
-</button>
+<div id="app">
+    <a href="javascript:void(0)" @click="clear()">Очистить</a>
+    <a href="javascript:void(0)" @click="mod(1)">Ластик</a>
+    <a href="javascript:void(0)" @click="mod(0)">Кисть</a>
+    <canvas id="Canvas" width="800" height="500"
+            style="background-color:#eee; border: 1px solid #ccc; margin:10px;">
+        Ваш браузер не поддерживает Canvas
+    </canvas>
+    <button @click="saveCanvasAsImageFile()">
+        Сохранить
+    </button>
+</div>
 <script>
-    function getImage(canvas) {
-        const imageData = canvas.toDataURL();
-        let image = new Image();
-        image.src = imageData;
-        return image;
-    }
+    const app = new Vue(
+        {
+            el: '#app',
 
-    function saveImage(image) {
-        const link = document.createElement("a");
+            data: {
+                canvas: null,
+                mode: 0
+            },
 
-        link.setAttribute("href", image.src);
-        link.setAttribute("download", "canvasImage");
-        link.click();
-    }
+            methods: {
+                mod: function (i) {
+                    app.mode = i;
+                },
+                clear: function () {
+                    let context = app.canvas.getContext('2d')
+                    context.clearRect(0, 0, app.canvas.width, app.canvas.height)
+                    context.fillStyle = 'white'
+                    context.fillRect(0, 0, window.innerWidth, window.innerHeight);
+                },
+                getImage: function () {
+                    const imageData = app.canvas.toDataURL();
+                    let image = new Image();
+                    image.src = imageData;
+                    return image;
+                }
+                ,
 
+                saveImage: function (image) {
+                    const link = document.createElement("a");
+                    link.setAttribute("href", image.src);
+                    link.setAttribute("download", "canvasImage");
+                    link.click();
+                }
+                ,
 
-    function saveCanvasAsImageFile() {
-        const image = getImage(document.getElementById("Canvas"));
-        saveImage(image);
-    }
-
-    let canvas = document.getElementById("Canvas")
-    let context = canvas.getContext("2d")
-    let w = canvas.width
-    let h = canvas.height
+                saveCanvasAsImageFile: function () {
+                    const image = app.getImage(document.getElementById("Canvas"));
+                    app.saveImage(image);
+                }
+            }
+        })
+    app.canvas = document.getElementById("Canvas")
+    let context = app.canvas.getContext("2d")
+    context.fillStyle = 'white'
+    context.fillRect(0, 0, window.innerWidth, window.innerHeight);
+    let w = app.canvas.width
+    let h = app.canvas.height
 
     let mouse = {x: 0, y: 0};
     let draw = false;
 
-    canvas.addEventListener("mousedown", function (e) {
+    app.canvas.addEventListener("mousedown", function (e) {
 
+        if (app.mode == 0) {
+            context.strokeStyle = 'black'
+            context.lineWidth = 3
+        } else {
+            context.strokeStyle = 'white'
+            context.lineWidth = 20
+        }
         mouse.x = e.pageX - this.offsetLeft;
         mouse.y = e.pageY - this.offsetTop;
         draw = true;
         context.beginPath();
         context.moveTo(mouse.x, mouse.y);
     });
-    canvas.addEventListener("mousemove", function (e) {
+    app.canvas.addEventListener("mousemove", function (e) {
 
         if (draw == true) {
             mouse.x = e.pageX - this.offsetLeft;
@@ -59,7 +94,7 @@
             context.stroke();
         }
     });
-    canvas.addEventListener("mouseup", function (e) {
+    app.canvas.addEventListener("mouseup", function (e) {
 
         mouse.x = e.pageX - this.offsetLeft;
         mouse.y = e.pageY - this.offsetTop;
