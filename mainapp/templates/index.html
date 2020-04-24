@@ -5,6 +5,69 @@
     <title>Title</title>
 </head>
 <body>
+<canvas id="Canvas" width="500" height="500"
+        style="background-color:#eee; border: 1px solid #ccc; margin:10px;">
+    Ваш браузер не поддерживает Canvas
+</canvas>
+<button onclick="saveCanvasAsImageFile()">
+    Сохранить
+</button>
+<script>
+    function getImage(canvas) {
+        const imageData = canvas.toDataURL();
+        let image = new Image();
+        image.src = imageData;
+        return image;
+    }
 
+    function saveImage(image) {
+        const link = document.createElement("a");
+
+        link.setAttribute("href", image.src);
+        link.setAttribute("download", "canvasImage");
+        link.click();
+    }
+
+
+    function saveCanvasAsImageFile() {
+        const image = getImage(document.getElementById("Canvas"));
+        saveImage(image);
+    }
+
+    let canvas = document.getElementById("Canvas")
+    let context = canvas.getContext("2d")
+    let w = canvas.width
+    let h = canvas.height
+
+    let mouse = {x: 0, y: 0};
+    let draw = false;
+
+    canvas.addEventListener("mousedown", function (e) {
+
+        mouse.x = e.pageX - this.offsetLeft;
+        mouse.y = e.pageY - this.offsetTop;
+        draw = true;
+        context.beginPath();
+        context.moveTo(mouse.x, mouse.y);
+    });
+    canvas.addEventListener("mousemove", function (e) {
+
+        if (draw == true) {
+            mouse.x = e.pageX - this.offsetLeft;
+            mouse.y = e.pageY - this.offsetTop;
+            context.lineTo(mouse.x, mouse.y);
+            context.stroke();
+        }
+    });
+    canvas.addEventListener("mouseup", function (e) {
+
+        mouse.x = e.pageX - this.offsetLeft;
+        mouse.y = e.pageY - this.offsetTop;
+        context.lineTo(mouse.x, mouse.y);
+        context.stroke();
+        context.closePath();
+        draw = false;
+    });
+</script>
 </body>
 </html>
