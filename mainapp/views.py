@@ -3,7 +3,7 @@ import PIL.Image
 from io import BytesIO
 import os
 import json
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 
@@ -11,7 +11,10 @@ from django.contrib.auth import authenticate
 
 
 def index(request):
-    return render(request, 'index.html')
+    if request.user.is_authenticated:
+        return render(request, 'index.html')
+    else:
+        return redirect('/auth')
 
 
 def auth(request):
@@ -19,7 +22,6 @@ def auth(request):
     return render(request, 'registration/login.html')
 
 
-#folowwing code is only for cheking the work of authentification
 def login(request):
     username = request.POST["login"]
     password = request.POST["password"]
