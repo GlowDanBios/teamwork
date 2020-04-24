@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<form method="post" action="http://127.0.0.1:8000/new_account/">
+    {% csrf_token %}
+<input type="text" name="login" />
+<input type="password" name="password" />
+<input type="password" name="password_repeat" />
+<input type="submit" value="create account" />
+</form>
+<form method="post" action="http://127.0.0.1:8000/auth/">
+    {% csrf_token %}
+<input type="submit" value="I have an account" />
+</form>
+</body>
