@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<form method="get" action="http://127.0.0.1:8000/new_project">
+    <input type="text" placeholder="name of project" name='name' required="True" />
+    <input type="submit" value="create new project"/>
+</form>
+<body>
+{% for project in projects %}
+    <a href="/project?id={{ project.id }}">{{ project.name }}</a>
+{% endfor %}
+<form method="get" action="http://127.0.0.1:8000/logout/">
+    <input type="submit" value="log out"/>
+</form>
+</body>
+</html>
