@@ -10,7 +10,7 @@
     <a href="javascript:void(0)" @click="clear()">Очистить</a>
     <a href="javascript:void(0)" @click="mod(1)">Ластик</a>
     <a href="javascript:void(0)" @click="mod(0)">Кисть</a>
-    <canvas id="Canvas" width="800" height="500"
+    <canvas id="Canvas" width="1000" height="700"
             style="background-color:#eee; border: 1px solid #ccc; margin:10px;">
         Ваш браузер не поддерживает Canvas
     </canvas>
@@ -19,9 +19,25 @@
     </button>
 </div>
 <form method="get" action="http://127.0.0.1:8000/logout/">
-<input type="submit" value="log out" />
+    <input type="submit" value="log out"/>
 </form>
 <script>
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
     const app = new Vue(
         {
             el: '#app',
@@ -40,28 +56,42 @@
                     context.clearRect(0, 0, app.canvas.width, app.canvas.height)
                     context.fillStyle = 'white'
                     context.fillRect(0, 0, window.innerWidth, window.innerHeight);
+                    this.send()
                 },
                 getImage: function () {
                     const imageData = app.canvas.toDataURL();
                     let image = new Image();
                     image.src = imageData;
                     return image;
-                }
-                ,
+                },
+                send: async function () {
+                    let img = app.getImage();
+                    let blob = await new Promise(resolve => app.canvas.toBlob(resolve, 'image/png'));
+                    let csrftoken = getCookie('csrftoken');
+                    let resp = fetch('http://127.0.0.1:8000/get_img', {
+                            method: 'POST',
+                            headers: {
+                                "X-CSRFToken": csrftoken,
+                            },
+                            body: blob,
 
-                saveImage: function (image) {
-                    const link = document.createElement("a");
-                    link.setAttribute("href", image.src);
-                    link.setAttribute("download", "canvasImage");
-                    link.click();
-                }
-                ,
-
-                saveCanvasAsImageFile: function () {
-                    const image = app.getImage(document.getElementById("Canvas"));
-                    app.saveImage(image);
+                        }
+                    )
                 }
             }
+            ,
+
+            mounted: function () {
+                let a = setInterval(async function () {
+                    const response = await (await fetch('http://127.0.0.1:8000/get_update/')).json()
+                    let i = response.i
+                    let back = new Image()
+                    back.src = `http://127.0.0.1:8000/${i}`
+                    const context = app.canvas.getContext('2d')
+                    context.drawImage(back, 0, 0)
+                }, 300)
+            }
+
         })
     app.canvas = document.getElementById("Canvas")
     let context = app.canvas.getContext("2d")
@@ -105,6 +135,7 @@
         context.stroke();
         context.closePath();
         draw = false;
+        app.send()
     });
 </script>
 </body>

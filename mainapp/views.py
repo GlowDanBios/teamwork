@@ -63,7 +63,7 @@ def get_img(request):
         if img:
             mg = PIL.Image.open(BytesIO(img))
             i = (len(os.listdir('mainapp/static')))
-            if i > 100:
+            if i > 50:
                 for j in os.listdir('mainapp/static'):
                     os.remove('mainapp/static/'+j)
             k = len(os.listdir('mainapp/static'))

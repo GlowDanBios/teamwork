@@ -23,7 +23,7 @@ urlpatterns = [
     path('login/', log_in),
     path('admin/', admin.site.urls),
     path('get_update/', get_updates),
-    path('get_img/', get_img),
+    path('get_img', get_img),
     path('register/', reg),
     path('new_account/', new_account),
     path('logout/', log_out)
