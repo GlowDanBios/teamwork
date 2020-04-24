@@ -9,6 +9,7 @@ from .models import Project
 from django.contrib.auth import authenticate, login, logout
 
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Create your views here.
 
 
@@ -27,7 +28,7 @@ def project(request):
         proj = get_object_or_404(Project, pk=pid)
         if len(Project.objects.filter(id=pid, users__pk=request.user.id)) > 0:
             return render(request, 'project.html', {'proj': proj})
-    return redirect('')
+    return redirect('/')
 
 
 def new_project(request):
@@ -35,9 +36,18 @@ def new_project(request):
     if name is not None:
         proj = Project(name=name)
         proj.save()
+        os.mkdir('mainapp/static/proj' + str(proj.id))
         proj.users.add(request.user)
         return redirect(f'/project?id={proj.id}')
 
+
+def delete_project(request):
+    pid = request.GET.get('id', None)
+    print(pid)
+    if pid:
+        proj = get_object_or_404(Project, pk=pid)
+        proj.delete()
+    return redirect('/')
 
 def auth(request):
     return render(request, 'registration/login.html')
@@ -103,6 +113,7 @@ def get_img(request):
 def get_updates(request):
     id = request.GET.get('id', None)
     if id:
-        file = os.listdir('mainapp/static/proj'+id)[-1]
+        print(os.listdir(os.path.join(BASE_DIR, 'mainapp/static/proj'+id)))
+        file = os.listdir(os.path.join(BASE_DIR, 'mainapp/static/proj'+id))[-1]
         return HttpResponse(content=json.dumps({'i': 'static/proj'+id + '/' + file}))
     return HttpResponse(status=400)

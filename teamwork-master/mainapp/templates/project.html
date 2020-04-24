@@ -17,6 +17,9 @@
     <button @click="saveCanvasAsImageFile()">
         Сохранить
     </button>
+    <form method='get' action='/delete_project?id={{ project.id }}'>
+        <input type='submit' value='delete this project'>
+    </form>
 </div>
 
 <script>
