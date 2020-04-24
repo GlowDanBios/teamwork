@@ -5,7 +5,7 @@ import os
 import json
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login, logout
 
 # Create your views here.
 
@@ -18,19 +18,43 @@ def index(request):
 
 
 def auth(request):
-    print(request)
     return render(request, 'registration/login.html')
 
 
-def login(request):
+def log_in(request):
     username = request.POST["login"]
     password = request.POST["password"]
     user = authenticate(username=username, password=password)
     if user is not None:
-        print(f'user {username} has logged in with password {password}')
-        return index(request)
+        login(request, user)
+        return redirect('/')
     else:
-        return render(request, 'registration/fail.html')
+        return render(request, 'registration/fail.html', {'error': 'login or password is incorrect'})
+
+
+def log_out(request):
+    logout(request)
+    return redirect('/auth')
+
+
+def reg(request):
+    return render(request, 'registration/reg.html')
+
+
+def new_account(request):
+    username = request.POST["login"]
+    password = request.POST["password"]
+    password_repeat = request.POST["password_repeat"]
+    try:
+        user = User.objects.get(username=username)
+        return render(request, 'registration/fail.html', {'error': 'there is already a user with this username'})
+    except:
+        if password == password_repeat:
+            User.objects.create_user(username=username, password=password)
+            user = authenticate(username=username, password=password)
+            return redirect('/')
+        else:
+            return render(request, 'registration/fail.html', {'error': 'the input passwords are different'})
 
 
 def get_img(request):
