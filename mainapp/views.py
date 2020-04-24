@@ -1,20 +1,32 @@
-from django.shortcuts import render, HttpResponse
+from django.shortcuts import render, HttpResponse, get_object_or_404
 import PIL.Image
 from io import BytesIO
 import os
 import json
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
+from .models import Project
 from django.contrib.auth import authenticate, login, logout
+
 
 # Create your views here.
 
 
 def index(request):
     if request.user.is_authenticated:
-        return render(request, 'index.html')
+        projects = Project.objects.filter(users__pk=1)
+        print(projects)
+        return render(request, 'index.html', {'projects': projects})
     else:
         return redirect('/auth')
+
+
+def project(request):
+    pid = request.GET.get('id', None)
+    if pid:
+        proj = get_object_or_404(Project, pk=pid)
+        return render(request, 'project.html')
+    return redirect('')
 
 
 def auth(request):
@@ -65,7 +77,7 @@ def get_img(request):
             i = (len(os.listdir('mainapp/static')))
             if i > 50:
                 for j in os.listdir('mainapp/static'):
-                    os.remove('mainapp/static/'+j)
+                    os.remove('mainapp/static/' + j)
             k = len(os.listdir('mainapp/static'))
             if k < 10:
                 mg.save(f'mainapp/static/canvas0{k}.png', 'PNG')
@@ -77,4 +89,4 @@ def get_img(request):
 
 def get_updates(request):
     file = os.listdir('mainapp/static')[-1]
-    return HttpResponse(content=json.dumps({'i': 'static/'+file}))
+    return HttpResponse(content=json.dumps({'i': 'static/' + file}))
