@@ -18,9 +18,7 @@
         Сохранить
     </button>
 </div>
-<form method="get" action="http://127.0.0.1:8000/logout/">
-    <input type="submit" value="log out"/>
-</form>
+
 <script>
     function getCookie(name) {
         var cookieValue = null;
@@ -65,14 +63,16 @@
                     return image;
                 },
                 send: async function () {
-                    let img = app.getImage();
+                    let data = {id: {{ proj.id }}}
                     let blob = await new Promise(resolve => app.canvas.toBlob(resolve, 'image/png'));
                     let csrftoken = getCookie('csrftoken');
                     let resp = fetch('http://127.0.0.1:8000/get_img', {
                             method: 'POST',
                             headers: {
                                 "X-CSRFToken": csrftoken,
+                                'data': JSON.stringify(data)
                             },
+
                             body: blob,
 
                         }
@@ -83,7 +83,8 @@
 
             mounted: function () {
                 let a = setInterval(async function () {
-                    const response = await (await fetch('http://127.0.0.1:8000/get_update/')).json()
+                    let id = {{ proj.id }}
+                    const response = await (await fetch(`http://127.0.0.1:8000/get_update?id=${id}`)).json()
                     let i = response.i
                     let back = new Image()
                     back.src = `http://127.0.0.1:8000/${i}`

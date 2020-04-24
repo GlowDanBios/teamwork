@@ -8,5 +8,8 @@
 {% for project in projects %}
     <a href="/project?id={{ project.id }}">{{ project.name }}</a>
 {% endfor %}
+<form method="get" action="http://127.0.0.1:8000/logout/">
+    <input type="submit" value="log out"/>
+</form>
 </body>
 </html>

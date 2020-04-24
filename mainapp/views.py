@@ -14,7 +14,7 @@ from django.contrib.auth import authenticate, login, logout
 
 def index(request):
     if request.user.is_authenticated:
-        projects = Project.objects.filter(users__pk=1)
+        projects = Project.objects.filter(users__pk=request.user.id)
         print(projects)
         return render(request, 'index.html', {'projects': projects})
     else:
@@ -25,7 +25,8 @@ def project(request):
     pid = request.GET.get('id', None)
     if pid:
         proj = get_object_or_404(Project, pk=pid)
-        return render(request, 'project.html')
+        if len(Project.objects.filter(id=pid, users__pk=request.user.id)) > 0:
+            return render(request, 'project.html', {'proj': proj})
     return redirect('')
 
 
@@ -72,21 +73,27 @@ def new_account(request):
 def get_img(request):
     if request.method == "POST":
         img = request.body
+        id = request.headers['Data'].split(':')[1].replace('}', '')
+        if 'proj'+id not in os.listdir('mainapp/static'):
+            os.mkdir('mainapp/static/proj'+id)
         if img:
             mg = PIL.Image.open(BytesIO(img))
-            i = (len(os.listdir('mainapp/static')))
-            if i > 50:
-                for j in os.listdir('mainapp/static'):
-                    os.remove('mainapp/static/' + j)
-            k = len(os.listdir('mainapp/static'))
+            i = (len(os.listdir('mainapp/static/proj'+id)))
+            if i > 30:
+                for j in os.listdir('mainapp/static/proj'+id):
+                    os.remove('mainapp/static/proj'+id + '/' + j)
+            k = len(os.listdir('mainapp/static/proj'+id))
             if k < 10:
-                mg.save(f'mainapp/static/canvas0{k}.png', 'PNG')
+                mg.save(f'mainapp/static/proj{id}/canvas0{k}.png', 'PNG')
             else:
-                mg.save(f'mainapp/static/canvas{k}.png', 'PNG')
+                mg.save(f'mainapp/static/proj{id}/canvas{k}.png', 'PNG')
             return HttpResponse(status=200)
     return HttpResponse(status=400)
 
 
 def get_updates(request):
-    file = os.listdir('mainapp/static')[-1]
-    return HttpResponse(content=json.dumps({'i': 'static/' + file}))
+    id = request.GET.get('id', None)
+    if id:
+        file = os.listdir('mainapp/static/proj'+id)[-1]
+        return HttpResponse(content=json.dumps({'i': 'static/proj'+id + '/' + file}))
+    return HttpResponse(status=400)
