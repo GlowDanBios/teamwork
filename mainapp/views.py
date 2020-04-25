@@ -97,3 +97,20 @@ def get_updates(request):
         file = os.listdir('mainapp/static/proj'+id)[-1]
         return HttpResponse(content=json.dumps({'i': 'static/proj'+id + '/' + file}))
     return HttpResponse(status=400)
+
+
+def new_project(request):
+    name = request.GET.get('name', None)
+    if name is not None:
+        proj = Project(name=name)
+        proj.save()
+        proj.users.add(request.user)
+        return redirect(f'/project?id={proj.id}')
+
+
+def delete_project(request):
+    pid = request.GET.get('id', None)
+    if pid:
+        proj = get_object_or_404(Project, pk=pid)
+        proj.delete()
+    return redirect('/')

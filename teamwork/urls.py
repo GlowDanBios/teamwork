@@ -27,5 +27,6 @@ urlpatterns = [
     path('get_img', get_img),
     path('register/', reg),
     path('new_account/', new_account),
-    path('logout/', log_out)
+    path('logout/', log_out),
+    path('new_project', new_project)
 ]
