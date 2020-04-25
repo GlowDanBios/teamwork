@@ -6,7 +6,10 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
           integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <style>
-        .A {
+        .header-link {
+            color: white;
+        }
+        .header-link:hover {
             color: white;
         }
     </style>
@@ -14,8 +17,8 @@
 <body>
 <div class="navbar navbar-dark bg-dark shadow-sm">
     <div class="container">
-        <a href="/new_project">Создать проект</a>
-        <a href="/">Мои проекты</a>
+        <a class="header-link" href="/new_project">Создать проект</a>
+        <a class="header-link" href="/">Мои проекты</a>
     </div>
     <form method="get" action="http://127.0.0.1:8000/logout/">
         <input class="btn btn-primary" type="submit" value="Выход"/>

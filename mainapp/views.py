@@ -28,7 +28,7 @@ def project(request):
     if pid:
         proj = get_object_or_404(Project, pk=pid)
         if len(Project.objects.filter(id=pid, users__pk=request.user.id)) > 0:
-            return render(request, 'project.html', {'proj': proj, 'user':request.user})
+            return render(request, 'project.html', {'proj': proj})
     return redirect('')
 
 
@@ -114,13 +114,11 @@ def delete_project(request):
 
 
 def join_project(request):
-    if request.user.is_authenticated:
-        join_id = request.GET.get('join_id', None)
-        if join_id:
-            proj = Project.objects.get(join_id=join_id)
-            proj.users.add(request.user)
-            return redirect(f'/project?id={proj.id}')
-    return redirect('/')
+    join_id = request.GET.get('join_id', None)
+    if join_id:
+        proj = Project.objects.get(join_id=join_id)
+        proj.users.add(request.user)
+        return redirect(f'/project?id={proj.id}')
 
 
 def create_project(request):
@@ -162,4 +160,3 @@ def get_message(request):
             msg.save()
             return HttpResponse(status=200)
     return HttpResponse(status=400)
-
