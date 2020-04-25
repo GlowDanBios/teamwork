@@ -110,7 +110,8 @@ def delete_project(request):
     pid = request.GET.get('id', None)
     if pid:
         proj = Project.objects.get(id=pid)
-        proj.delete()
+        if request.user in proj.users.all():
+            proj.delete()
     return redirect('/')
 
 
@@ -205,4 +206,3 @@ def check_task(request):
                 task.save()
                 return HttpResponse(status=200)
     return HttpResponse(status=400)
-
