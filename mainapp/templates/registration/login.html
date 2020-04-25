@@ -13,7 +13,8 @@
             padding: 15px;
             margin: auto;
         }
-        .text-center{
+
+        .text-center {
             margin-top: 100px;
         }
 
@@ -30,7 +31,7 @@
     <div class="form-group">
         <input class="form-control" type="password" name="password" placeholder="password"/><br>
     </div>
-    <input class="btn btn-primary" type="submit" value="login"/>
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
 </form>
 <form method="post" action="http://127.0.0.1:8000/register/">
     {% csrf_token %}
