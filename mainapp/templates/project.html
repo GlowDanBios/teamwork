@@ -11,6 +11,7 @@
         .header-link {
             color: white;
         }
+
         .header-link:hover {
             color: white;
         }
@@ -93,33 +94,40 @@
 <br>
 <div id="app">
     <a class="btn btn-danger btn-md" href="javascript:void(0)" @click="clear()">Очистить</a>
-            <a href="javascript:void(0)" @click="mod(1)"><i class="fas fa-eraser fa-2x"></i></a>
-            <a href="javascript:void(0)" @click="mod(0)"><i class="fas fa-paint-brush fa-2x"></i></a>
+    <a href="javascript:void(0)" @click="mod(1)"><i class="fas fa-eraser fa-2x"></i></a>
+    <a href="javascript:void(0)" @click="mod(0)"><i class="fas fa-paint-brush fa-2x"></i></a>
     <div class="row">
-        <div class="col-md-6" style="left: 20px">
+        <div class="col-md-4" style="left: 20px">
             <canvas id="Canvas" width="1000" height="700"
                     style="background-color:#eee; border: 1px solid #ccc;">
                 Ваш браузер не поддерживает Canvas
             </canvas>
         </div>
 
-        <div class="col-md-6" style="">
-                    <div class="chat">
-                        <div class='chat-messages'>
-                            <div v-for="m in messages">
-                                {% verbatim %}
-                                <p><small>{{ m.time }}</small>, {{ m.author }}: {{ m.text }}</p>
-                                {% endverbatim %}
-                            </div>
-                        </div>
-                        <div class='chat-input'>
-                            <input type='text' v-model="msg" class='chat-form__input'
-                                   placeholder='Введите сообщение'>
-                            <button @click="sendMessage()" class="btn btn-primary">Отправить</button>
-                        </div>
+        <div class="col-md-4">
+            <div class="chat">
+                <div class='chat-messages'>
+                    <div v-for="m in messages">
+                        {% verbatim %}
+                        <p><small>{{ m.time }}</small>, {{ m.author }}: {{ m.text }}</p>
+                        {% endverbatim %}
                     </div>
+                </div>
+                <div class='chat-input'>
+                    <input type='text' v-model="msg" class='chat-form__input'
+                           placeholder='Введите сообщение'>
+                    <button @click="sendMessage()" class="btn btn-primary">Отправить</button>
+                </div>
+            </div>
         </div>
-
+        <div class="col-md-4">
+            <h3>Список участников</h3>
+            <ol>
+                {% for u in users %}
+                    <li>{{ u.username }}</li>
+                {% endfor %}
+            </ol>
+        </div>
     </div>
 </div>
 <a href='http://127.0.0.1:8000/delete_project?id={{ proj.id }}'>Удалить проект</a>
@@ -250,14 +258,14 @@
         mouse.y = e.pageY - this.offsetTop;
         draw = true;
         context.beginPath();
-        context.moveTo(mouse.x, mouse.y-70);
+        context.moveTo(mouse.x, mouse.y - 70);
     });
     app.canvas.addEventListener("mousemove", function (e) {
 
         if (draw == true) {
             mouse.x = e.pageX - this.offsetLeft;
             mouse.y = e.pageY - this.offsetTop;
-            context.lineTo(mouse.x, mouse.y-70);
+            context.lineTo(mouse.x, mouse.y - 70);
             context.stroke();
         }
     });
@@ -265,7 +273,7 @@
 
         mouse.x = e.pageX - this.offsetLeft;
         mouse.y = e.pageY - this.offsetTop;
-        context.lineTo(mouse.x, mouse.y-70);
+        context.lineTo(mouse.x, mouse.y - 70);
         context.stroke();
         context.closePath();
         draw = false;
