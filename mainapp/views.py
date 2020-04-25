@@ -7,6 +7,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from .models import Project
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
 
 # Create your views here.
@@ -15,7 +16,6 @@ from django.contrib.auth import authenticate, login, logout
 def index(request):
     if request.user.is_authenticated:
         projects = Project.objects.filter(users__pk=request.user.id)
-        print(projects)
         return render(request, 'index.html', {'projects': projects})
     else:
         return redirect('/auth')
@@ -31,18 +31,23 @@ def project(request):
 
 
 def auth(request):
-    return render(request, 'registration/login.html')
+    if request.method == 'POST':
+        form = AuthenticationForm(request, request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            if user:
+                login(request, user)
+                return redirect('/')
+            else:
+                form = AuthenticationForm(request, request.POST)
+        return render(request, 'registration/login.html', {'form': form})
 
-
-def log_in(request):
-    username = request.POST["login"]
-    password = request.POST["password"]
-    user = authenticate(username=username, password=password)
-    if user is not None:
-        login(request, user)
-        return redirect('/')
     else:
-        return render(request, 'registration/fail.html', {'error': 'login or password is incorrect'})
+        form = AuthenticationForm()
+
+        return render(request, 'registration/login.html', {
+                'form': form
+            })
 
 
 def log_out(request):
@@ -51,23 +56,18 @@ def log_out(request):
 
 
 def reg(request):
-    return render(request, 'registration/reg.html')
-
-
-def new_account(request):
-    username = request.POST["login"]
-    password = request.POST["password"]
-    password_repeat = request.POST["password_repeat"]
-    try:
-        user = User.objects.get(username=username)
-        return render(request, 'registration/fail.html', {'error': 'there is already a user with this username'})
-    except:
-        if password == password_repeat:
-            User.objects.create_user(username=username, password=password)
-            user = authenticate(username=username, password=password)
-            return redirect('/')
-        else:
-            return render(request, 'registration/fail.html', {'error': 'the input passwords are different'})
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+        username = form.cleaned_data.get('username')
+        my_password = form.cleaned_data.get('password1')
+        user = authenticate(username=username, password=my_password)
+        login(request, user)
+        return redirect('/')
+    else:
+        form = UserCreationForm()
+        return render(request, 'registration/reg.html', {'form': form})
 
 
 def get_img(request):
