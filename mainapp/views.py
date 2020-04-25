@@ -175,7 +175,7 @@ def new_task(request):
             t = Task()
             t.text = text
             t.user = get_object_or_404(User, pk=user)
-            t.project = get_object_or_404(Project, pk=proj)
+            t.project = get_object_or_404(Project, pk=project)
             t.save()
             return HttpResponse(status=200)
     return HttpResponse(status=400)

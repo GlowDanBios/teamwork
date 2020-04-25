@@ -132,8 +132,8 @@
         <div class="col-md-4">
             <div class="row">
                 {% for us in users %}
-
-                    <div class="col" v-for="t in ustasks({{ us.id }})">
+                <div class="col">
+                    <div v-for="t in ustasks({{ us.id }})">
                         {% verbatim %}
                         <div v-if="t.checked">
                             <div href="javascript:void(0)" @click="check(t.id)" class="text-center"
@@ -152,8 +152,11 @@
                         <br>
                         {% endverbatim %}
                     </div>
+                </div>
                 {% endfor %}
             </div>
+            <input v-model="taskTxt" type="text" placeholder="Текст задачи">
+            <button class="btn btn-primary" @click="newtask()">Создать новую задачу</button>
         </div>
         <div class="col-md-4">
             <h3>Список участников</h3>
@@ -192,6 +195,7 @@
                 mode: 0,
                 msg: '',
                 messages: [],
+                taskTxt: '',
                 tasks: [{'text': '', 'user': ''}],
             },
 
@@ -209,14 +213,16 @@
                 check: function (id) {
                     let uid = {{ user.id }}
 
-                    let csrftoken = getCookie('csrftoken');
+                        let
+                    csrftoken = getCookie('csrftoken');
                     const data = {'tid': id, 'uid': uid}
                     let resp = fetch('http://127.0.0.1:8000/check/', {
-                        method: 'post',
-                        headers: {
-                            "X-CSRFToken": csrftoken,
-                        },
-                        body: JSON.stringify(data)}
+                            method: 'post',
+                            headers: {
+                                "X-CSRFToken": csrftoken,
+                            },
+                            body: JSON.stringify(data)
+                        }
                     )
                 },
                 getImage: function () {
@@ -240,6 +246,22 @@
 
                         }
                     )
+                },
+                newtask: function () {
+                    let uid = {{ user.id }}
+                        let
+                    pid = {{ proj.id }}
+                                            let csrftoken = getCookie('csrftoken');
+
+                        let
+                    data = {text: this.taskTxt, 'user': uid, 'project': pid}
+                    let resp = fetch('http://127.0.0.1:8000/new_task/', {
+                        method: 'POST',
+                        headers: {
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify(data)
+                    })
                 },
                 sendMessage: function () {
                     let csrftoken = getCookie('csrftoken');
