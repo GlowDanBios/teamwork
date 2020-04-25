@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+{% load crispy_forms_tags %}
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -22,21 +24,12 @@
     </style>
 </head>
 <body class="text-center">
-
-<form class="form-signin" method="post" action="http://127.0.0.1:8000/new_account/">
+<form method="post">
     {% csrf_token %}
-    <div class="form-group">
-        <input class='form-control' type="text" name="login" placeholder="login"/><br>
-    </div>
-    <div class="form-group">
-
-        <input class='form-control' type="password" name="password" placeholder="password"/><br>
-    </div>
-    <div class="form-group">
-
-        <input class='form-control' type="password" name="password_repeat" placeholder="repeat password"/><br>
-    </div>
-    <button class="btn btn-lg btn-primary btn-block" type="submit">Зарегистрироваться</button>
+    {{ form|crispy }}
+    <br>
+    <button class="btn btn-primary">Зарегистрироваться</button>
 </form>
+<br>
 <a href="/auth">У меня уже есть аккаунт</a>
 </body>

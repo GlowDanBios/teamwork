@@ -3,6 +3,8 @@ import PIL.Image
 from io import BytesIO
 import os
 import json
+from random import randint
+
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from .models import Project
@@ -100,17 +102,33 @@ def get_updates(request):
 
 
 def new_project(request):
-    name = request.GET.get('name', None)
-    if name is not None:
-        proj = Project(name=name)
-        proj.save()
-        proj.users.add(request.user)
-        return redirect(f'/project?id={proj.id}')
+    return render(request, 'new_project.html')
 
 
 def delete_project(request):
     pid = request.GET.get('id', None)
     if pid:
-        proj = get_object_or_404(Project, pk=pid)
+        proj = Project.objects.get(id=pid)
         proj.delete()
     return redirect('/')
+
+
+def join_project(request):
+    join_id = request.GET.get('join_id', None)
+    if join_id:
+        proj = Project.objects.get(join_id=join_id)
+        proj.users.add(request.user)
+        return redirect(f'/project?id={proj.id}')
+
+
+def create_project(request):
+    name = request.GET.get('name', None)
+    if name is not None:
+        join_id = randint(1000000000, 9999999999)
+        while Project.objects.filter(join_id=join_id):
+            join_id = randint(1000000000, 9999999999)
+        proj = Project(name=name, join_id=join_id)
+        proj.save()
+        os.mkdir('mainapp/static/proj' + str(proj.id))
+        proj.users.add(request.user)
+        return redirect(f'/project?id={proj.id}')

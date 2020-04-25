@@ -1,7 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-{% load crispy_forms_tags %}
-
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
@@ -24,12 +22,12 @@
     </style>
 </head>
 <body class="text-center">
-<h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
-<form class="form-signin" method="post">
+<h1 class="h3 mb-3 font-weight-normal">Введите название проекта</h1>
+<form class="form-signin" method="get" action="http://127.0.0.1:8000/create_project">
     {% csrf_token %}
-        {{ form|crispy }}
-    <br>
-        <button class="btn btn-primary">Вход</button>
+    <div class="form-group">
+        <input class="form-control" type="text" name="name" placeholder="Название"/><br>
+    </div>
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Создать проект</button>
 </form>
-<a href="/register">Зарегистрироваться</a>
 </body>

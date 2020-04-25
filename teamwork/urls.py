@@ -21,12 +21,13 @@ urlpatterns = [
     path('', index),
     path('project', project),
     path('auth/', auth),
-    path('login/', log_in),
     path('admin/', admin.site.urls),
     path('get_update/', get_updates),
     path('get_img', get_img),
     path('register/', reg),
-    path('new_account/', new_account),
     path('logout/', log_out),
-    path('new_project', new_project)
+    path('new_project', new_project),
+    path('create_project', create_project),
+    path('join_project', join_project),
+    path('delete_project', delete_project),
 ]
