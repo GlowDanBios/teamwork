@@ -7,7 +7,7 @@ from random import randint
 
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
-from .models import Project
+from .models import Project, Message
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
@@ -28,7 +28,7 @@ def project(request):
     if pid:
         proj = get_object_or_404(Project, pk=pid)
         if len(Project.objects.filter(id=pid, users__pk=request.user.id)) > 0:
-            return render(request, 'project.html', {'proj': proj})
+            return render(request, 'project.html', {'proj': proj, 'user':request.user})
     return redirect('')
 
 
@@ -114,11 +114,13 @@ def delete_project(request):
 
 
 def join_project(request):
-    join_id = request.GET.get('join_id', None)
-    if join_id:
-        proj = Project.objects.get(join_id=join_id)
-        proj.users.add(request.user)
-        return redirect(f'/project?id={proj.id}')
+    if request.user.is_authenticated:
+        join_id = request.GET.get('join_id', None)
+        if join_id:
+            proj = Project.objects.get(join_id=join_id)
+            proj.users.add(request.user)
+            return redirect(f'/project?id={proj.id}')
+    return redirect('/')
 
 
 def create_project(request):
@@ -132,3 +134,32 @@ def create_project(request):
         os.mkdir('mainapp/static/proj' + str(proj.id))
         proj.users.add(request.user)
         return redirect(f'/project?id={proj.id}')
+
+
+def get_update_messages(request):
+    pid = request.GET.get('id', None)
+    if pid:
+        proj = get_object_or_404(Project, pk=pid)
+        messages = Message.objects.filter(project=proj)
+        data = []
+        for message in messages:
+            data.append({'text': message.text, 'author': message.user.username, 'time': str(message.sent_at)[:5]})
+        return HttpResponse(status=200, content=json.dumps(data))
+    return HttpResponse(status=400)
+
+
+def get_message(request):
+    if request.method == 'POST':
+        js = json.loads(request.body.decode('UTF-8'))
+        text = js['text']
+        user = js['user']
+        proj = js['project']
+        if text and user and proj:
+            msg = Message()
+            msg.text = text
+            msg.user = get_object_or_404(User, pk=user)
+            msg.project = get_object_or_404(Project, pk=proj)
+            msg.save()
+            return HttpResponse(status=200)
+    return HttpResponse(status=400)
+

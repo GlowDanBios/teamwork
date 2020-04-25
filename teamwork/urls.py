@@ -30,4 +30,6 @@ urlpatterns = [
     path('create_project', create_project),
     path('join_project', join_project),
     path('delete_project', delete_project),
+    path('get_msg_update', get_update_messages),
+    path('get_msg/', get_message)
 ]

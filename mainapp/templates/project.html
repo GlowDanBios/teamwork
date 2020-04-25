@@ -7,7 +7,72 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
           integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/af4aae0ea2.js" crossorigin="anonymous"></script>
+    <style>
+        .chat {
+            border: 1px solid #333;
+            margin: 15px;
+            width: 100%;
+            height: 700px;
+            background: #555;
+            color: #fff;
+        }
 
+        .chat-messages {
+            min-height: 93%;
+            max-height: 93%;
+            overflow: auto;
+        }
+
+        .chat-messages__content {
+            padding: 1px;
+        }
+
+        .chat__message {
+            border-left: 3px solid #333;
+            margin-top: 2px;
+            padding: 2px;
+        }
+
+        .chat__message_black {
+            border-color: #000;
+        }
+
+        .chat__message_blue {
+            border-color: blue;
+        }
+
+        .chat__message_green {
+            border-color: green;
+        }
+
+        .chat__message_red {
+            border-color: red;
+        }
+
+        .chat-input {
+            min-height: 6%;
+        }
+
+        input {
+            font-family: arial;
+            font-size: 16px;
+            vertical-align: middle;
+            background: #333;
+            color: #fff;
+            border: 0;
+            display: inline-block;
+            margin: 1px;
+            height: 30px;
+        }
+
+        .chat-form__input {
+            width: 79%;
+        }
+
+        .chat-form__submit {
+            width: 18%;
+        }
+    </style>
 </head>
 <body>
 <div class="navbar navbar-dark bg-dark shadow-sm">
@@ -21,15 +86,40 @@
 </div>
 <br>
 <div id="app">
-    <div class="container">
-        <a class="btn btn-danger btn-lg" href="javascript:void(0)" @click="clear()">Очистить</a>
-        <a href="javascript:void(0)" @click="mod(1)"><i class="fas fa-eraser fa-4x"></i>
-        </a>
-        <a href="javascript:void(0)" @click="mod(0)"><i class="fas fa-paint-brush fa-4x"></i></a>
-        <canvas id="Canvas" width="1000" height="700"
-                style="background-color:#eee; border: 1px solid #ccc; margin:10px;">
-            Ваш браузер не поддерживает Canvas
-        </canvas>
+    <div class="row">
+        <div class="col-md-6" style="left: 20px">
+            <a class="btn btn-danger btn-lg" href="javascript:void(0)" @click="clear()">Очистить</a>
+            <a href="javascript:void(0)" @click="mod(1)"><i class="fas fa-eraser fa-4x"></i>
+            </a>
+            <a href="javascript:void(0)" @click="mod(0)"><i class="fas fa-paint-brush fa-4x"></i></a>
+            <canvas id="Canvas" width="1000" height="700"
+                    style="background-color:#eee; border: 1px solid #ccc; margin:10px;">
+                Ваш браузер не поддерживает Canvas
+            </canvas>
+        </div>
+        <br>
+        <br>
+        <div class="col-md-6" style="top:70px">
+            <div class="card">
+                <div class="card-body">
+                    <div class="chat">
+                        <div class='chat-messages'>
+                            <div v-for="m in messages">
+                                {% verbatim %}
+                                <p><small>{{ m.time }}</small>, {{ m.author }}: {{ m.text }}</p>
+                                {% endverbatim %}
+                            </div>
+                        </div>
+                        <div class='chat-input'>
+                            <input type='text' v-model="msg" class='chat-form__input'
+                                   placeholder='Введите сообщение'>
+                            <button @click="sendMessage()" class="btn btn-success">Отправить</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 <a href='http://127.0.0.1:8000/delete_project?id={{ proj.id }}'>Удалить проект</a>
@@ -57,7 +147,9 @@
 
             data: {
                 canvas: null,
-                mode: 0
+                mode: 0,
+                msg: '',
+                messages: []
             },
 
             methods: {
@@ -92,6 +184,22 @@
 
                         }
                     )
+                },
+                sendMessage: function () {
+                    let csrftoken = getCookie('csrftoken');
+                    let data = {
+                        'text': this.msg,
+                        'user': {{ user.id }},
+                        'project': {{ proj.id }}
+                    }
+                    let resp = fetch('http://127.0.0.1:8000/get_msg/', {
+                        method: 'POST',
+                        headers: {
+                            "X-CSRFToken": csrftoken,
+                        },
+                        body: JSON.stringify(data)
+                    })
+                    this.msg = ''
                 }
             }
             ,
@@ -107,6 +215,15 @@
                     const context = app.canvas.getContext('2d')
                     context.drawImage(back, 0, 0)
                 }, 300)
+                let b = setInterval(async function () {
+                    let id =
+                    {{ proj.id }}
+                    const response = await (await fetch(`http://127.0.0.1:8000/get_msg_update?id=${id}`)).json()
+                    if (this.messages != response) {
+                        app.messages = response
+                        console.log(app.messages)
+                    }
+                }, 500)
             }
 
         })
@@ -133,14 +250,14 @@
         mouse.y = e.pageY - this.offsetTop;
         draw = true;
         context.beginPath();
-        context.moveTo(mouse.x, mouse.y);
+        context.moveTo(mouse.x, mouse.y-70);
     });
     app.canvas.addEventListener("mousemove", function (e) {
 
         if (draw == true) {
             mouse.x = e.pageX - this.offsetLeft;
             mouse.y = e.pageY - this.offsetTop;
-            context.lineTo(mouse.x, mouse.y);
+            context.lineTo(mouse.x, mouse.y-70);
             context.stroke();
         }
     });
@@ -148,7 +265,7 @@
 
         mouse.x = e.pageX - this.offsetLeft;
         mouse.y = e.pageY - this.offsetTop;
-        context.lineTo(mouse.x, mouse.y);
+        context.lineTo(mouse.x, mouse.y-70);
         context.stroke();
         context.closePath();
         draw = false;
