@@ -19,6 +19,7 @@
         <input class="btn btn-primary" type="submit" value="Выход"/>
     </form>
 </div>
+<br>
 <div id="app">
     <div class="container">
         <a class="btn btn-danger btn-lg" href="javascript:void(0)" @click="clear()">Очистить</a>
@@ -31,7 +32,8 @@
         </canvas>
     </div>
 </div>
-
+<a href='http://127.0.0.1:8000/delete_project?id={{ proj.id }}'>Удалить проект</a>
+<p>invitation link: 127.0.0.1:8000/join_project?join_id={{ proj.join_id }}</p>
 <script>
     function getCookie(name) {
         var cookieValue = null;

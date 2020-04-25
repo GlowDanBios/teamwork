@@ -7,8 +7,9 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from .models import Project
 from django.contrib.auth import authenticate, login, logout
+from random import randint
 
-
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Create your views here.
 
 
@@ -27,8 +28,39 @@ def project(request):
         proj = get_object_or_404(Project, pk=pid)
         if len(Project.objects.filter(id=pid, users__pk=request.user.id)) > 0:
             return render(request, 'project.html', {'proj': proj})
-    return redirect('')
+    return redirect('/')
 
+
+def join_project(request):
+    join_id = request.GET.get('join_id', None)
+    if join_id:
+        proj = Project.objects.get(join_id=join_id)
+        proj.users.add(request.user)
+        return redirect(f'/project?id={proj.id}')
+
+
+def new_project(request):
+    return render(request, 'new_project.html')
+def create_project(request):
+    name = request.GET.get('name', None)
+    if name is not None:
+        join_id = randint(1000000000, 9999999999)
+        while Project.objects.filter(join_id=join_id):
+            join_id = randint(1000000000, 9999999999)
+        proj = Project(name=name, join_id=join_id)
+        proj.save()
+        os.mkdir('mainapp/static/proj' + str(proj.id))
+        proj.users.add(request.user)
+        return redirect(f'/project?id={proj.id}')
+
+
+def delete_project(request):
+    pid = request.GET.get('id', None)
+    print(pid)
+    if pid:
+        proj = Project.objects.get(id=pid)
+        proj.delete()
+    return redirect('/')
 
 def auth(request):
     return render(request, 'registration/login.html')
@@ -74,19 +106,19 @@ def get_img(request):
     if request.method == "POST":
         img = request.body
         id = request.headers['Data'].split(':')[1].replace('}', '')
-        if 'proj'+id not in os.listdir('mainapp/static'):
-            os.mkdir('mainapp/static/proj'+id)
+        if 'proj'+id not in os.path.join(BASE_DIR, os.listdir('mainapp/static')):
+            os.path.join(BASE_DIR, os.mkdir('mainapp/static/proj'+id))
         if img:
             mg = PIL.Image.open(BytesIO(img))
-            i = (len(os.listdir('mainapp/static/proj'+id)))
+            i = (len(os.path.join(BASE_DIR, os.listdir('mainapp/static/proj'+id))))
             if i > 30:
-                for j in os.listdir('mainapp/static/proj'+id):
-                    os.remove('mainapp/static/proj'+id + '/' + j)
-            k = len(os.listdir('mainapp/static/proj'+id))
+                for j in os.path.join(BASE_DIR, os.listdir('mainapp/static/proj'+id)):
+                    os.path.join(BASE_DIR, os.remove('mainapp/static/proj'+id + '/' + j))
+            k = len(os.path.join(BASE_DIR, os.listdir('mainapp/static/proj'+id)))
             if k < 10:
-                mg.save(f'mainapp/static/proj{id}/canvas0{k}.png', 'PNG')
+                mg.save(os.path.join(BASE_DIR, f'mainapp/static/proj{id}/canvas0{k}.png'), 'PNG')
             else:
-                mg.save(f'mainapp/static/proj{id}/canvas{k}.png', 'PNG')
+                mg.save(os.path.join(BASE_DIR, f'mainapp/static/proj{id}/canvas{k}.png'), 'PNG')
             return HttpResponse(status=200)
     return HttpResponse(status=400)
 
@@ -94,23 +126,6 @@ def get_img(request):
 def get_updates(request):
     id = request.GET.get('id', None)
     if id:
-        file = os.listdir('mainapp/static/proj'+id)[-1]
-        return HttpResponse(content=json.dumps({'i': 'static/proj'+id + '/' + file}))
+        file = '/' + os.listdir(os.path.join(BASE_DIR, 'mainapp/static/proj'+id))[-1]
+        return HttpResponse(content=json.dumps({'i': os.path.join(BASE_DIR, 'mainapp/static/proj'+id)[1:] + file}))
     return HttpResponse(status=400)
-
-
-def new_project(request):
-    name = request.GET.get('name', None)
-    if name is not None:
-        proj = Project(name=name)
-        proj.save()
-        proj.users.add(request.user)
-        return redirect(f'/project?id={proj.id}')
-
-
-def delete_project(request):
-    pid = request.GET.get('id', None)
-    if pid:
-        proj = get_object_or_404(Project, pk=pid)
-        proj.delete()
-    return redirect('/')
