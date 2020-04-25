@@ -4,19 +4,32 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://kit.fontawesome.com/af4aae0ea2.js" crossorigin="anonymous"></script>
+
 </head>
 <body>
+<div class="navbar navbar-dark bg-dark shadow-sm">
+    <div class="container">
+        <a href="">Создать проект</a>
+        <a href="/">Мои проекты</a>
+    </div>
+    <form method="get" action="http://127.0.0.1:8000/logout/">
+        <input class="btn btn-primary" type="submit" value="Выход"/>
+    </form>
+</div>
 <div id="app">
-    <a href="javascript:void(0)" @click="clear()">Очистить</a>
-    <a href="javascript:void(0)" @click="mod(1)">Ластик</a>
-    <a href="javascript:void(0)" @click="mod(0)">Кисть</a>
-    <canvas id="Canvas" width="1000" height="700"
-            style="background-color:#eee; border: 1px solid #ccc; margin:10px;">
-        Ваш браузер не поддерживает Canvas
-    </canvas>
-    <button @click="saveCanvasAsImageFile()">
-        Сохранить
-    </button>
+    <div class="container">
+        <a class="btn btn-danger btn-lg" href="javascript:void(0)" @click="clear()">Очистить</a>
+        <a href="javascript:void(0)" @click="mod(1)"><i class="fas fa-eraser fa-4x"></i>
+        </a>
+        <a href="javascript:void(0)" @click="mod(0)"><i class="fas fa-paint-brush fa-4x"></i></a>
+        <canvas id="Canvas" width="1000" height="700"
+                style="background-color:#eee; border: 1px solid #ccc; margin:10px;">
+            Ваш браузер не поддерживает Canvas
+        </canvas>
+    </div>
 </div>
 
 <script>
@@ -83,7 +96,8 @@
 
             mounted: function () {
                 let a = setInterval(async function () {
-                    let id = {{ proj.id }}
+                    let id =
+                    {{ proj.id }}
                     const response = await (await fetch(`http://127.0.0.1:8000/get_update?id=${id}`)).json()
                     let i = response.i
                     let back = new Image()
