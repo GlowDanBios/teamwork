@@ -3,18 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-</head>
-<body>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 
-<form method="post" action="http://127.0.0.1:8000/new_account/">
-{% csrf_token %}
-<input type="text" name="login" placeholder="login" /><br>
-<input type="password" name="password" placeholder="password" /><br>
-<input type="password" name="password_repeat" placeholder="repeat password" /><br>
-<input type="submit" value="create account" />
-</form>
-<form method="post" action="http://127.0.0.1:8000/auth/">
+    <style>
+        .form-signin {
+            width: 100%;
+            max-width: 330px;
+            padding: 15px;
+            margin: auto;
+        }
+
+        .text-center {
+            margin-top: 100px;
+        }
+
+
+    </style>
+</head>
+<body class="text-center">
+
+<form class="form-signin" method="post" action="http://127.0.0.1:8000/new_account/">
     {% csrf_token %}
-<input type="submit" value="I have an account" />
+    <div class="form-group">
+        <input class='form-control' type="text" name="login" placeholder="login"/><br>
+    </div>
+    <div class="form-group">
+
+        <input class='form-control' type="password" name="password" placeholder="password"/><br>
+    </div>
+    <div class="form-group">
+
+        <input class='form-control' type="password" name="password_repeat" placeholder="repeat password"/><br>
+    </div>
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Зарегистрироваться</button>
 </form>
+<a href="/auth">У меня уже есть аккаунт</a>
 </body>
