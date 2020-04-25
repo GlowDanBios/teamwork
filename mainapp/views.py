@@ -7,7 +7,7 @@ from random import randint
 
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
-from .models import Project, Message
+from .models import Project, Message, Task
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
@@ -162,5 +162,47 @@ def get_message(request):
             msg.project = get_object_or_404(Project, pk=proj)
             msg.save()
             return HttpResponse(status=200)
+    return HttpResponse(status=400)
+
+
+def new_task(request):
+    if request.method == 'POST':
+        js = json.loads(request.body.decode('UTF-8'))
+        text = js['text']
+        user = js['user']
+        project = js['project']
+        if text and user and project:
+            t = Task()
+            t.text = text
+            t.user = get_object_or_404(User, pk=user)
+            t.project = get_object_or_404(Project, pk=proj)
+            t.save()
+            return HttpResponse(status=200)
+    return HttpResponse(status=400)
+
+
+def get_update_tasks(request):
+    pid = request.GET.get('id', None)
+    if pid:
+        proj = get_object_or_404(Project, pk=pid)
+        tasks = Task.objects.filter(project=proj)
+        data = []
+        for task in tasks:
+            data.append({'id': task.id, 'text': task.text, 'author': task.user.id, 'checked': task.checked, 'user': task.user.username})
+        return HttpResponse(status=200, content=json.dumps(data))
+    return HttpResponse(status=400)
+
+
+def check_task(request):
+    if request.method == 'POST':
+        js = json.loads(request.body.decode('UTF-8'))
+        tid = js['tid']
+        uid = js['uid']
+        if tid and uid:
+            task = get_object_or_404(Task, pk=tid)
+            if task.user.id == uid:
+                task.checked = not task.checked
+                task.save()
+                return HttpResponse(status=200)
     return HttpResponse(status=400)
 

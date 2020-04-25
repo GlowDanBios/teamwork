@@ -31,5 +31,8 @@ urlpatterns = [
     path('join_project', join_project),
     path('delete_project', delete_project),
     path('get_msg_update', get_update_messages),
-    path('get_msg/', get_message)
+    path('get_msg/', get_message),
+    path('new_task/', new_task),
+    path('get_task_update', get_update_tasks),
+    path('check/', check_task),
 ]
