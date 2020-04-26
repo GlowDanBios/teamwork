@@ -28,11 +28,23 @@
     <h3>
         Доступные проекты:
     </h3>
+<div class="row">
 {% for project in projects %}
-    <div class="container">
-        <a href="/project?id={{ project.id }}">{{ project.name }}</a>
+    <div class="card" style="width: 18rem; margin: 10px">
+        <img class="card-img-top" src="{{ project.path }}" alt="Картинка">
+        <div class="card-body">
+            <h5 class="card-title">{{ project.name }}</h5>
+            <p class="card-text">
+                <ol>
+                    {% for user in project.users %}
+                    <li>{{ user.username }}</li>
+                    {% endfor %}
+                </ol>
+            </p>
+            <a href="/project?id={{ project.id }}" class="btn btn-primary">Открыть</a>
+        </div>
     </div>
 {% endfor %}
-
+</div>
 </body>
 </html>
