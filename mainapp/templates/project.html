@@ -7,6 +7,19 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
           integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/af4aae0ea2.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet"
+          href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.0/styles/default.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+            integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+            crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+            integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+            crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+            integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+            crossorigin="anonymous"></script>
+
     <style>
         .header-link {
             color: white;
@@ -98,7 +111,20 @@
     <div class="container">
         <a class="header-link" href="/new_project">Создать проект</a>
         <a class="header-link" href="/">Мои проекты</a>
+        <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton"
+                    data-toggle="dropdown"
+                    aria-haspopup="true" aria-expanded="false">
+                Список уччастников
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                {% for u in users %}
+                    <a class="dropdown-item">{{ u.username }}</a>
+                {% endfor %}
+            </div>
+        </div>
     </div>
+
     <form method="get" action="http://127.0.0.1:8000/logout/">
         <input class="btn btn-primary" type="submit" value="Выход"/>
     </form>
@@ -112,7 +138,8 @@
             <a href="javascript:void(0)" @click="mod(0)"><i class="fas fa-paint-brush fa-2x"></i></a>
         </div>
         <div class="col-md-6">
-            <p align="right"  style="margin-right: 10px"><a href='http://127.0.0.1:8000/delete_project?id={{ proj.id }}'>Удалить проект</a></p>
+            <p align="right" style="margin-right: 10px"><a href='http://127.0.0.1:8000/delete_project?id={{ proj.id }}'>Удалить
+                проект</a></p>
             <p align="right" style="margin-right: 10px">invitation link:
                 127.0.0.1:8000/join_project?join_id={{ proj.join_id }}</p>
         </div>
@@ -125,13 +152,26 @@
             </canvas>
         </div>
 
-        <div class="col-md-4">
+        <div class="col-md-2">
             <div id='c' class="chat">
                 <div class='chat-messages'>
                     <div v-for="m in messages">
-                        {% verbatim %}
-                        <p><small>{{ m.time }}</small>, {{ m.author }}: {{ m.text }}</p>
-                        {% endverbatim %}
+                        <div v-if="m.author=='{{ user.username }}'">
+                            <div class="text-right">
+                                {% verbatim %}
+                                <p><small>{{ m.time }}</small>, Вы : {{ m.text }}</p>
+                                {% endverbatim %}
+                            </div>
+                        </div>
+                        <div v-else>
+
+                            <div class="text-left">
+                                {% verbatim %}
+                                <p><small>{{ m.time }}</small>, {{ m.author }}: {{ m.text }}</p>
+                                {% endverbatim %}
+                            </div>
+
+                        </div>
                     </div>
                 </div>
                 <div class='chat-input'>
@@ -141,26 +181,62 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-2">
-            <div  class="row task-input">
-                    <input class='task-form__input' v-model="taskTxt" type="text" placeholder="Текст задачи">
-                    <button class="btn btn-primary task-form__submit" @click="newtask()">Создать</button>
+        <div class="col-md-4">
+            <div class="row task-input">
+                <input class='task-form__input' v-model="taskTxt" type="text" placeholder="Текст задачи">
+                <button class="btn btn-primary task-form__submit" @click="newtask()">Создать</button>
+                <a href="javascript:void(0)" @click="hide()">
+                    <div v-if="show">
+                        Скрыть чужие задачи
+                    </div>
+                    <div v-else>
+                        Показать чужие задачи
+                    </div>
+                </a>
+
+            </div>
+            <div v-if="show">
+                <div class="row">
+
+                    {% for us in users %}
+                        <div class="col" align="center" style="margin-top: 10px">
+                            <div v-for="t in ustasks({{ us.id }})">
+                                {% verbatim %}
+                                <div v-if="t.checked">
+                                    <div href="javascript:void(0)" @click="check(t.id)" class="text-center"
+                                         style="color:white; width: 220px; height: 120px; background: #8A8A8A">
+                                        <p>{{ t.user }}</p>
+                                        <p>{{ t.text }}</p>
+                                    </div>
+                                </div>
+                                <div v-else>
+                                    <div href="javascript:void(0)" @click="check(t.id)" class="text-center"
+                                         style="color:white; width: 220px;height: 120px; background: #42EB64">
+                                        <p>{{ t.user }}</p>
+                                        <p>{{ t.text }}</p>
+                                    </div>
+                                </div>
+                                <br>
+                                {% endverbatim %}
+                            </div>
+                        </div>
+                    {% endfor %}
                 </div>
-                
-                {% for us in users %}
-                <div class="col" align="center" style="margin-top: 10">
-                    <div v-for="t in ustasks({{ us.id }})">
+            </div>
+                <div v-else>
+                    <div class="row">
+                    <div v-for="t in ustasks({{ user.id }})">
                         {% verbatim %}
-                        <div v-if="t.checked">
+                        <div class="col" v-if="t.checked">
                             <div href="javascript:void(0)" @click="check(t.id)" class="text-center"
-                                 style="color:white; width: 220px; height: 120px; background: gray">
+                                 style="color:white; width: 220px; height: 120px; background: #8A8A8A">
                                 <p>{{ t.user }}</p>
                                 <p>{{ t.text }}</p>
                             </div>
                         </div>
                         <div v-else>
                             <div href="javascript:void(0)" @click="check(t.id)" class="text-center"
-                                 style="color:white; width: 220px;height: 120px; background: green">
+                                 style="color:white; width: 220px;height: 120px; background: #42EB64">
                                 <p>{{ t.user }}</p>
                                 <p>{{ t.text }}</p>
                             </div>
@@ -168,215 +244,212 @@
                         <br>
                         {% endverbatim %}
                     </div>
+                    </div>
                 </div>
-                {% endfor %}
             </div>
-
-        <div class="col-md-4">
-            <h3>Список участников</h3>
-            <ol>
-                {% for u in users %}
-                    <li>{{ u.username }}</li>
-                {% endfor %}
-            </ol>
         </div>
     </div>
-</div>
 
-<script>
-    function getCookie(name) {
-        var cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            var cookies = document.cookie.split(';');
-            for (var i = 0; i < cookies.length; i++) {
-                var cookie = cookies[i].trim();
-                // Does this cookie string begin with the name we want?
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
+    <script>
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
                 }
             }
+            return cookieValue;
         }
-        return cookieValue;
-    }
 
-    const app = new Vue(
-        {
-            el: '#app',
+        const app = new Vue(
+            {
+                el: '#app',
 
-            data: {
-                canvas: null,
-                mode: 0,
-                msg: '',
-                messages: [],
-                taskTxt: '',
-                tasks: [{'text': '', 'user': ''}],
-            },
-
-            methods: {
-                mod: function (i) {
-                    app.mode = i;
+                data: {
+                    canvas: null,
+                    mode: 0,
+                    msg: '',
+                    messages: [],
+                    show: true,
+                    taskTxt: '',
+                    tasks: [{'text': '', 'user': ''}],
                 },
-                clear: function () {
-                    let context = app.canvas.getContext('2d')
-                    context.clearRect(0, 0, app.canvas.width, app.canvas.height)
-                    context.fillStyle = 'white'
-                    context.fillRect(0, 0, window.innerWidth, window.innerHeight);
-                    this.send()
-                },
-                check: function (id) {
-                    let uid = {{ user.id }}
+
+                methods: {
+                    mod: function (i) {
+                        app.mode = i;
+                    },
+                    hide: function () {
+                        this.show = !this.show
+                    },
+                    clear: function () {
+                        let context = app.canvas.getContext('2d')
+                        context.clearRect(0, 0, app.canvas.width, app.canvas.height)
+                        context.fillStyle = 'white'
+                        context.fillRect(0, 0, window.innerWidth, window.innerHeight);
+                        this.send()
+                    },
+                    check: function (id) {
+                        let uid = {{ user.id }}
+
+                            let
+                        csrftoken = getCookie('csrftoken');
+                        const data = {'tid': id, 'uid': uid}
+                        let resp = fetch('http://127.0.0.1:8000/check/', {
+                                method: 'post',
+                                headers: {
+                                    "X-CSRFToken": csrftoken,
+                                },
+                                body: JSON.stringify(data)
+                            }
+                        )
+                    },
+                    getImage: function () {
+                        const imageData = app.canvas.toDataURL();
+                        let image = new Image();
+                        image.src = imageData;
+                        return image;
+                    },
+                    send: async function () {
+                        let data = {id: {{ proj.id }}}
+                        let blob = await new Promise(resolve => app.canvas.toBlob(resolve, 'image/png'));
+                        let csrftoken = getCookie('csrftoken');
+                        let resp = fetch('http://127.0.0.1:8000/get_img', {
+                                method: 'POST',
+                                headers: {
+                                    "X-CSRFToken": csrftoken,
+                                    'data': JSON.stringify(data)
+                                },
+
+                                body: blob,
+
+                            }
+                        )
+                    },
+                    newtask: function () {
+                        let uid = {{ user.id }}
+                            let
+                        pid = {{ proj.id }}
+                            let
+                        csrftoken = getCookie('csrftoken');
 
                         let
-                    csrftoken = getCookie('csrftoken');
-                    const data = {'tid': id, 'uid': uid}
-                    let resp = fetch('http://127.0.0.1:8000/check/', {
-                            method: 'post',
+                            data = {text: this.taskTxt, 'user': uid, 'project': pid}
+                        let resp = fetch('http://127.0.0.1:8000/new_task/', {
+                            method: 'POST',
                             headers: {
                                 "X-CSRFToken": csrftoken,
                             },
                             body: JSON.stringify(data)
+                        })
+                        this.taskTxt = ''
+                    },
+                    sendMessage: function () {
+                        let csrftoken = getCookie('csrftoken');
+                        let data = {
+                            'text': this.msg,
+                            'user': {{ user.id }},
+                            'project': {{ proj.id }}
                         }
-                    )
-                },
-                getImage: function () {
-                    const imageData = app.canvas.toDataURL();
-                    let image = new Image();
-                    image.src = imageData;
-                    return image;
-                },
-                send: async function () {
-                    let data = {id: {{ proj.id }}}
-                    let blob = await new Promise(resolve => app.canvas.toBlob(resolve, 'image/png'));
-                    let csrftoken = getCookie('csrftoken');
-                    let resp = fetch('http://127.0.0.1:8000/get_img', {
+                        let resp = fetch('http://127.0.0.1:8000/get_msg/', {
                             method: 'POST',
                             headers: {
                                 "X-CSRFToken": csrftoken,
-                                'data': JSON.stringify(data)
                             },
-
-                            body: blob,
-
-                        }
-                    )
-                },
-                newtask: function () {
-                    let uid = {{ user.id }}
-                        let
-                    pid = {{ proj.id }}
-                                            let csrftoken = getCookie('csrftoken');
-
-                        let
-                    data = {text: this.taskTxt, 'user': uid, 'project': pid}
-                    let resp = fetch('http://127.0.0.1:8000/new_task/', {
-                        method: 'POST',
-                        headers: {
-                            "X-CSRFToken": csrftoken,
-                        },
-                        body: JSON.stringify(data)
-                    })
-                },
-                sendMessage: function () {
-                    let csrftoken = getCookie('csrftoken');
-                    let data = {
-                        'text': this.msg,
-                        'user': {{ user.id }},
-                        'project': {{ proj.id }}
-                    }
-                    let resp = fetch('http://127.0.0.1:8000/get_msg/', {
-                        method: 'POST',
-                        headers: {
-                            "X-CSRFToken": csrftoken,
-                        },
-                        body: JSON.stringify(data)
-                    })
-                    this.msg = ''
-                },
-                ustasks: (uid) => {
-                    if (this.tasks != undefined) {
-                        return this.tasks.filter((el) => {
-                            if (el.author == uid) return el
+                            body: JSON.stringify(data)
                         })
-                    } else return []
+                        this.msg = ''
+                    },
+                    ustasks: (uid) => {
+                        if (this.tasks != undefined) {
+                            return this.tasks.filter((el) => {
+                                if (el.author == uid) return el
+                            })
+                        } else return []
+                    }
+                },
+
+                mounted: function () {
+                    let a = setInterval(async function () {
+                        let id =
+                        {{ proj.id }}
+                        const response = await (await fetch(`http://127.0.0.1:8000/get_update?id=${id}`)).json()
+                        let i = response.i
+                        let back = new Image()
+                        back.src = `http://127.0.0.1:8000/${i}`
+                        const context = app.canvas.getContext('2d')
+                        context.drawImage(back, 0, 0)
+                    }, 300)
+                    let b = setInterval(async function () {
+                        let id =
+                        {{ proj.id }}
+                        const response = await (await fetch(`http://127.0.0.1:8000/get_msg_update?id=${id}`)).json()
+                        if (this.messages != response) {
+                            app.messages = response
+                        }
+                    }, 500)
+                    let c = setInterval(async function () {
+                        let id =
+                        {{ proj.id }}
+                        const response = await (await fetch(`http://127.0.0.1:8000/get_task_update?id=${id}`)).json()
+                        if (this.tasks != response) {
+                            this.tasks = response
+                        }
+                    }, 300)
                 }
-            },
 
-            mounted: function () {
-                let a = setInterval(async function () {
-                    let id =
-                    {{ proj.id }}
-                    const response = await (await fetch(`http://127.0.0.1:8000/get_update?id=${id}`)).json()
-                    let i = response.i
-                    let back = new Image()
-                    back.src = `http://127.0.0.1:8000/${i}`
-                    const context = app.canvas.getContext('2d')
-                    context.drawImage(back, 0, 0)
-                }, 300)
-                let b = setInterval(async function () {
-                    let id =
-                    {{ proj.id }}
-                    const response = await (await fetch(`http://127.0.0.1:8000/get_msg_update?id=${id}`)).json()
-                    if (this.messages != response) {
-                        app.messages = response
-                    }
-                }, 500)
-                let c = setInterval(async function () {
-                    let id =
-                    {{ proj.id }}
-                    const response = await (await fetch(`http://127.0.0.1:8000/get_task_update?id=${id}`)).json()
-                    if (this.tasks != response) {
-                        this.tasks = response
-                    }
-                }, 300)
+            })
+        app.canvas = document.getElementById("Canvas")
+        let context = app.canvas.getContext("2d")
+        context.fillStyle = 'white'
+        context.fillRect(0, 0, window.innerWidth, window.innerHeight);
+        let w = app.canvas.width
+        let h = app.canvas.height
+
+        let mouse = {x: 0, y: 0};
+        let draw = false;
+
+        app.canvas.addEventListener("mousedown", function (e) {
+
+            if (app.mode == 0) {
+                context.strokeStyle = 'black'
+                context.lineWidth = 3
+            } else {
+                context.strokeStyle = 'white'
+                context.lineWidth = 20
             }
+            mouse.x = e.pageX - this.offsetLeft;
+            mouse.y = e.pageY - this.offsetTop;
+            draw = true;
+            context.beginPath();
+            context.moveTo(mouse.x, mouse.y - 70);
+        });
+        app.canvas.addEventListener("mousemove", function (e) {
 
-        })
-    app.canvas = document.getElementById("Canvas")
-    let context = app.canvas.getContext("2d")
-    context.fillStyle = 'white'
-    context.fillRect(0, 0, window.innerWidth, window.innerHeight);
-    let w = app.canvas.width
-    let h = app.canvas.height
+            if (draw == true) {
+                mouse.x = e.pageX - this.offsetLeft;
+                mouse.y = e.pageY - this.offsetTop;
+                context.lineTo(mouse.x, mouse.y - 70);
+                context.stroke();
+            }
+        });
+        app.canvas.addEventListener("mouseup", function (e) {
 
-    let mouse = {x: 0, y: 0};
-    let draw = false;
-
-    app.canvas.addEventListener("mousedown", function (e) {
-
-        if (app.mode == 0) {
-            context.strokeStyle = 'black'
-            context.lineWidth = 3
-        } else {
-            context.strokeStyle = 'white'
-            context.lineWidth = 20
-        }
-        mouse.x = e.pageX - this.offsetLeft;
-        mouse.y = e.pageY - this.offsetTop;
-        draw = true;
-        context.beginPath();
-        context.moveTo(mouse.x, mouse.y - 70);
-    });
-    app.canvas.addEventListener("mousemove", function (e) {
-
-        if (draw == true) {
             mouse.x = e.pageX - this.offsetLeft;
             mouse.y = e.pageY - this.offsetTop;
             context.lineTo(mouse.x, mouse.y - 70);
             context.stroke();
-        }
-    });
-    app.canvas.addEventListener("mouseup", function (e) {
+            context.closePath();
+            draw = false;
+            app.send()
+        });
 
-        mouse.x = e.pageX - this.offsetLeft;
-        mouse.y = e.pageY - this.offsetTop;
-        context.lineTo(mouse.x, mouse.y - 70);
-        context.stroke();
-        context.closePath();
-        draw = false;
-        app.send()
-    });
-
-</script>
+    </script>
 </body>
 </html>
