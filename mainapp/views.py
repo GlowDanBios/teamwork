@@ -77,7 +77,8 @@ def reg(request):
             form.save()
         username = form.cleaned_data.get('username')
         my_password = form.cleaned_data.get('password1')
-        user = authenticate(username=username, password=my_password)
+        user = User(username=username, password=my_password)
+        user.save()
         login(request, user)
         return redirect('/')
     else:
