@@ -28,7 +28,10 @@ def index(request):
         projects = Project.objects.filter(users__pk=request.user.id)
         projects_html = []
         for project in projects:
-            path = '/static/proj' + str(project.id) + '/' + sorted(os.listdir('mainapp/static/proj' + str(project.id)))[-1]
+            try:
+                path = '/static/proj' + str(project.id) + '/' + sorted(os.listdir('mainapp/static/proj' + str(project.id)))[-1]
+            except:
+                path = '/static/whitelist.jpg'
             projects_html.append(Project_html(project.name, project.users.all(), path, project.id))
         return render(request, 'index.html', {'projects': projects_html})
     else:
