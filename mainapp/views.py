@@ -12,13 +12,25 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
 
-# Create your views here.
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+class Project_html:
+    def __init__(self, name, users, path, id):
+        self.name = name
+        self.path = path
+        self.users = users
+        self.id = id
 
 
 def index(request):
     if request.user.is_authenticated:
         projects = Project.objects.filter(users__pk=request.user.id)
-        return render(request, 'index.html', {'projects': projects})
+        projects_html = []
+        for project in projects:
+            path = BASE_DIR + '/mainapp/static/proj' + str(project.id) + '/' + sorted(os.listdir('mainapp/static/proj' + str(project.id)))[-1]
+            projects_html.append(Project_html(project.name, project.users.all(), path, project.id))
+        return render(request, 'index.html', {'projects': projects_html})
     else:
         return redirect('/auth')
 
@@ -30,7 +42,7 @@ def project(request):
         users = proj.users.all()
         if len(Project.objects.filter(id=pid, users__pk=request.user.id)) > 0:
             return render(request, 'project.html', {'proj': proj, 'user':request.user, 'users': users})
-    return redirect('')
+    return redirect('/')
 
 
 def auth(request):
@@ -82,7 +94,7 @@ def get_img(request):
         if img:
             mg = PIL.Image.open(BytesIO(img))
             i = (len(os.listdir('mainapp/static/proj'+id)))
-            if i > 30:
+            if i > 20:
                 for j in os.listdir('mainapp/static/proj'+id):
                     os.remove('mainapp/static/proj'+id + '/' + j)
             k = len(os.listdir('mainapp/static/proj'+id))
@@ -97,7 +109,7 @@ def get_img(request):
 def get_updates(request):
     id = request.GET.get('id', None)
     if id:
-        file = os.listdir('mainapp/static/proj'+id)[-1]
+        file = sorted(os.listdir('mainapp/static/proj'+id))[-1]
         return HttpResponse(content=json.dumps({'i': 'static/proj'+id + '/' + file}))
     return HttpResponse(status=400)
 
