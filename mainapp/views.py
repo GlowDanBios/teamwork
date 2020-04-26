@@ -75,12 +75,8 @@ def reg(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             form.save()
-        username = form.cleaned_data.get('username')
-        my_password = form.cleaned_data.get('password1')
-        user = User(username=username, password=my_password)
-        user.save()
-        login(request, user)
-        return redirect('/')
+            return redirect('/')
+        return render(request, 'registration/reg.html', {'form': form})
     else:
         form = UserCreationForm()
         return render(request, 'registration/reg.html', {'form': form})
