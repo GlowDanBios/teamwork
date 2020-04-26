@@ -19,6 +19,9 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
             integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
             crossorigin="anonymous"></script>
+    <link rel="stylesheet"
+          href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.0/styles/default.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.0/highlight.min.js"></script>
 
     <style>
         .header-link {
@@ -107,6 +110,8 @@
     </style>
 </head>
 <body>
+<script>hljs.initHighlightingOnLoad();</script>
+
 <div class="navbar navbar-dark bg-dark shadow-sm">
     <div class="container">
         <a class="header-link" href="/new_project">Создать проект</a>
@@ -223,8 +228,8 @@
                     {% endfor %}
                 </div>
             </div>
-                <div v-else>
-                    <div class="row">
+            <div v-else>
+                <div class="row">
                     <div v-for="t in ustasks({{ user.id }})">
                         {% verbatim %}
                         <div class="col" v-if="t.checked">
@@ -244,12 +249,38 @@
                         <br>
                         {% endverbatim %}
                     </div>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
+    <div class="row">
+        <div class="col">
+            <div class="input-group mb-3">
+                <div class="custom-file">
+                    <input @change="change()" type="file" class="custom-file-input" id="inputGroupFile02">
+                    {% verbatim %}
+                    <label class="custom-file-label" for="inputGroupFile02" aria-describedby="inputGroupFileAddon02">{{
+                        file.name }}
+                    </label>
+                    {% endverbatim %}
+                </div>
+                <div class="input-group-append">
+                    <a @click="upload()" href="javascript:void(0)" class="input-group-text"
+                       id="inputGroupFileAddon02">Загрузить</a>
+                </div>
+            </div>
+            {% verbatim %}
+            <div class="col">
+                <div v-for="f in files">
+                    <p>{{f.username}}:
+                        <a v-bind:href="'http://127.0.0.1:8000/send_file?file='+f.id">Скачать {{ f.file }}</a></p>
+                </div>
+            </div>
+            {% endverbatim %}
 
+        </div>
+    </div>
+</div>
     <script>
         function getCookie(name) {
             var cookieValue = null;
@@ -278,6 +309,8 @@
                     messages: [],
                     show: true,
                     taskTxt: '',
+                    file: {'name': 'Выберите файл'},
+                    files: [],
                     tasks: [{'text': '', 'user': ''}],
                 },
 
@@ -294,6 +327,30 @@
                         context.fillStyle = 'white'
                         context.fillRect(0, 0, window.innerWidth, window.innerHeight);
                         this.send()
+                    },
+                    change: async () => {
+                        app.file = await document.getElementById('inputGroupFile02').files[0]
+                    },
+                    upload: async function () {
+                        let file = await app.file
+                        let uid = {{ user.id }}
+                            let
+                        pid = {{ proj.id }}
+
+                            let
+                        csrftoken = getCookie('csrftoken');
+                        let data = JSON.stringify({'uid': uid, 'pid': pid})
+                        let form = new FormData()
+                        form.append('file', file)
+                        let resp = fetch('http://127.0.0.1:8000/get_file/', {
+                            method: 'post',
+                            headers: {
+                                "X-CSRFToken": csrftoken,
+                                data: data
+                            },
+                            body: form
+                        })
+                        this.file = {name: 'Выберите файл'}
                     },
                     check: function (id) {
                         let uid = {{ user.id }}
@@ -402,6 +459,14 @@
                             this.tasks = response
                         }
                     }, 300)
+                    let d = setInterval(async function () {
+                        let id =
+                        {{ proj.id }}
+                        const response = await (await fetch(`http://127.0.0.1:8000/get_file_update?id=${id}`)).json()
+                        if (app.files != response) {
+                            app.files = response
+                        }
+                    }, 500)
                 }
 
             })
@@ -428,14 +493,14 @@
             mouse.y = e.pageY - this.offsetTop;
             draw = true;
             context.beginPath();
-            context.moveTo(mouse.x, mouse.y - 70);
+            context.moveTo(mouse.x, mouse.y - 120);
         });
         app.canvas.addEventListener("mousemove", function (e) {
 
             if (draw == true) {
                 mouse.x = e.pageX - this.offsetLeft;
                 mouse.y = e.pageY - this.offsetTop;
-                context.lineTo(mouse.x, mouse.y - 70);
+                context.lineTo(mouse.x, mouse.y - 120);
                 context.stroke();
             }
         });
@@ -443,7 +508,7 @@
 
             mouse.x = e.pageX - this.offsetLeft;
             mouse.y = e.pageY - this.offsetTop;
-            context.lineTo(mouse.x, mouse.y - 70);
+            context.lineTo(mouse.x, mouse.y - 120);
             context.stroke();
             context.closePath();
             draw = false;

@@ -6,6 +6,7 @@ class Project(models.Model):
     name = models.CharField(max_length=50, default='')
     join_id = models.BigIntegerField(null=True)
     users = models.ManyToManyField(to=User)
+    code = models.TextField(default='', null=True)
 
 
 class Message(models.Model):
@@ -20,3 +21,9 @@ class Task(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     checked = models.BooleanField(default=False)
+
+
+class File(models.Model):
+    file = models.FileField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)

@@ -7,7 +7,7 @@ from random import randint
 
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
-from .models import Project, Message, Task
+from .models import Project, Message, Task, File
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
@@ -94,7 +94,7 @@ def get_img(request):
         if img:
             mg = PIL.Image.open(BytesIO(img))
             i = (len(os.listdir('mainapp/static/proj'+id)))
-            if i > 20:
+            if i > 30:
                 for j in os.listdir('mainapp/static/proj'+id):
                     os.remove('mainapp/static/proj'+id + '/' + j)
             k = len(os.listdir('mainapp/static/proj'+id))
@@ -218,3 +218,41 @@ def check_task(request):
                 task.save()
                 return HttpResponse(status=200)
     return HttpResponse(status=400)
+
+
+def get_file(request):
+    if request.method == 'POST':
+        file = request.FILES['file']
+        js = json.loads(request.headers['data'])
+        uid = js['uid']
+        pid = js['pid']
+        f = File()
+        f.file = file
+        f.user = get_object_or_404(User, pk=uid)
+        f.project = get_object_or_404(Project, pk=pid)
+        f.save()
+        return HttpResponse(status=200)
+    return HttpResponse(status=400)
+
+
+def get_file_updates(request):
+    pid = request.GET.get('id', None)
+    if pid:
+        proj = get_object_or_404(Project, pk=pid)
+        files = File.objects.filter(project=proj)
+        data = []
+        fls = []
+        for file in files:
+            fls.append(file.file.read())
+            data.append({'id': file.id, 'userid': file.user.id, 'username': file.user.username, 'file': str(file.file), 'id': file.id })
+        return HttpResponse(status=200, content=json.dumps(data))
+    return HttpResponse(status=400)
+
+
+def send_file(request):
+    fid = request.GET.get('file', None)
+    if fid:
+        file = get_object_or_404(File, pk=fid)
+        response = HttpResponse(file.file.read(), content_type="application/liquid")
+        response['Content-Disposition'] = 'inline; filename=' + os.path.basename(str(file.file))
+        return response

@@ -35,4 +35,7 @@ urlpatterns = [
     path('new_task/', new_task),
     path('get_task_update', get_update_tasks),
     path('check/', check_task),
+    path('get_file/', get_file),
+    path('get_file_update', get_file_updates),
+    path('send_file', send_file)
 ]
